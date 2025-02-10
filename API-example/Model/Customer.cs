@@ -2,13 +2,13 @@
 {
     public class Customer
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public string ContactInfo { get; set; }
 
-        public Customer(int id, string name, string contactInfo)
+        public Customer(string name, string contactInfo)
         {
-            Id = id;
+            Id = Guid.NewGuid();
             Name = name;
             ContactInfo = contactInfo;
         }

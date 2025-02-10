@@ -2,13 +2,13 @@
 {
     public class Staff
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public string Position { get; set; }
 
-        public Staff(int id, string name, string position)
+        public Staff(string name, string position)
         {
-            Id = id;
+            Id = Guid.NewGuid();
             Name = name;
             Position = position;
         }

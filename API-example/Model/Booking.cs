@@ -2,15 +2,15 @@
 {
     public class Booking
     {
-        public int Id { get; set; }
-        public int CustomerId { get; set; }
-        public int RoomId { get; set; }
+        public Guid Id { get; set; }
+        public Guid CustomerId { get; set; }
+        public Guid RoomId { get; set; }
         public DateTime CheckInDate { get; set; }
         public DateTime CheckOutDate { get; set; }
 
-        public Booking(int id, int customerId, int roomId, DateTime checkInDate, DateTime checkOutDate)
+        public Booking(Guid customerId, Guid roomId, DateTime checkInDate, DateTime checkOutDate)
         {
-            Id = id;
+            Id = Guid.NewGuid();
             CustomerId = customerId;
             RoomId = roomId;
             CheckInDate = checkInDate;

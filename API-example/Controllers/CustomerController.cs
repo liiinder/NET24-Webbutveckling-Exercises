@@ -1,5 +1,7 @@
+using API_example;
 using API_example.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyApp.Namespace
 {
@@ -7,44 +9,53 @@ namespace MyApp.Namespace
     [ApiController]
     public class CustomerController : ControllerBase
     {
-        private List<Customer> Customers { get; set; } = new([
-            new Customer(1, "Kristoffer Linder", "0702729535"),
-            new Customer(2, "Bengt-Åke Linder", "0702910305"),
-            new Customer(3, "Irene Linder", "080123015"),
-            new Customer(4, "Joakim Linder", "0701239155"),
-            new Customer(5, "Martin Andersson", "0708129312"),
-            ]);
-
-        // GET: api/<rooms>
+        // GET: api/customers
         [HttpGet]
-        public IEnumerable<Customer> Get()
+        public async Task<IEnumerable<Customer>> Get()
         {
-            return Customers;
+            await using var db = new AppDbContext();
+            var customers = await db.Customers.ToListAsync();
+
+            return customers;
         }
 
-        // GET api/<rooms>/{id}
+        // GET api/customers/{id}
         [HttpGet("{id}")]
-        public Customer? Get(int id)
+        public async Task<Customer?> Get(Guid id)
         {
-            var result = Customers.FirstOrDefault(x => x.Id == id);
+            await using var db = new AppDbContext();
+
+            var result = await db.Customers.FirstOrDefaultAsync(x => x.Id == id);
             return result;
         }
 
-        // POST api/<UsersController>
+        // POST api/customers
         [HttpPost]
-        public void Post([FromBody] Customer customer)
+        public async void Post([FromBody] Customer value)
         {
-            Customers.Add(customer);
+            await using var db = new AppDbContext();
+
+            var newCustomer = new Customer(
+                value.Name,
+                value.ContactInfo);
+
+            db.Customers.Add(newCustomer);
+
+            db.SaveChanges();
         }
 
-        // PUT api/<UsersController>/5
+        // PUT api/customers/{id}
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] Customer customer)
+        public async void Put(Guid id, [FromBody] Customer value)
         {
-            var result = Customers.FirstOrDefault(x => x.Id == id);
-            result.Id = customer.Id;
-            result.Name = customer.Name;
-            result.ContactInfo = customer.ContactInfo;
+            await using var db = new AppDbContext();
+
+            var result = await db.Customers.FirstOrDefaultAsync(x => x.Id == id);
+
+            result.Id = value.Id;
+            result.Name = value.Name;
+            result.ContactInfo = value.ContactInfo;
+            db.SaveChanges();
         }
     }
 }

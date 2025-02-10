@@ -1,5 +1,7 @@
+using API_example;
 using API_example.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyApp.Namespace
 {
@@ -7,34 +9,33 @@ namespace MyApp.Namespace
     [ApiController]
     public class ReviewController : ControllerBase
     {
-        private List<Review> Reviews { get; set; } = new([
-            new Review(1, 1, "Stumma sängar", 1.4),
-            new Review(2, 2, "Bra mat", 5),
-            new Review(3, 3, "Ej parfymfritt", 0),
-            new Review(4, 4, "Helt klart prisvärt", 3),
-            new Review(5, 5, "Lite för sunkigt för priset", 1.3),
-            ]);
-
-        // GET: api/<ReviewController>
+        // GET: api/reviews
         [HttpGet]
-        public IEnumerable<Review> Get()
+        public async Task<IEnumerable<Review>> Get()
         {
-            return Reviews;
+            await using var db = new AppDbContext();
+            var reviews = await db.Reviews.ToArrayAsync();
+
+            return reviews;
         }
 
-        // GET api/<ReviewController>/5
+        // GET api/reviews/{id}
         [HttpGet("{id}")]
-        public Review Get(int id)
+        public async Task<Review> Get(Guid id)
         {
-            var result = Reviews.FirstOrDefault(x => x.Id == id);
+            await using var db = new AppDbContext();
+
+            var result = await db.Reviews.FirstOrDefaultAsync(x => x.Id == id);
             return result;
         }
 
-        // POST api/<ReviewController>
+        // POST api/reviews
         [HttpPost]
-        public void Post([FromBody] Review value)
+        public async void Post([FromBody] Review value)
         {
-            Reviews.Add(value);
+            await using var db = new AppDbContext();
+            db.Reviews.Add(new Review(value.CustomerId, value.Comment, value.Rating));
+            await db.SaveChangesAsync();
         }
     }
 }

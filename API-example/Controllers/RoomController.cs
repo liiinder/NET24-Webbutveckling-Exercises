@@ -9,7 +9,7 @@ namespace MyApp.Namespace
     [ApiController]
     public class RoomController : ControllerBase
     {
-        // GET: api/<rooms>
+        // GET: api/rooms
         [HttpGet]
         public async Task<IEnumerable<Room>> Get()
         {
@@ -19,7 +19,7 @@ namespace MyApp.Namespace
             return rooms;
         }
 
-        // GET api/<rooms>/{id}
+        // GET api/rooms/{id}
         [HttpGet("{id}")]
         public async Task<Room?> Get(Guid id)
         {
@@ -29,7 +29,7 @@ namespace MyApp.Namespace
             return room;
         }
 
-        // GET api/<rooms>/available
+        // GET api/rooms/available
         [HttpGet("available")]
         public async Task<IEnumerable<Room>> GetAvailable()
         {
@@ -39,6 +39,7 @@ namespace MyApp.Namespace
             return result;
         }
 
+        // Post api/rooms
         [HttpPost]
         public async void Post([FromBody] Room value)
         {
@@ -47,12 +48,13 @@ namespace MyApp.Namespace
             await db.SaveChangesAsync();
         }
 
-        // PUT api/<UsersController>/5
+        // PUT api/rooms/{id}
         [HttpPut("{id}")]
-        public void Put(Guid id, [FromBody] Room updated)
+        public async void Put(Guid id, [FromBody] Room updated)
         {
-            using var db = new AppDbContext();
-            var room = db.Rooms.FirstOrDefault(x => x.Id == id);
+            await using var db = new AppDbContext();
+            var room = await db.Rooms.FirstOrDefaultAsync(x => x.Id == id);
+
             if (room is not null)
             {
                 room.Id = updated.Id;

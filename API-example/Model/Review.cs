@@ -2,14 +2,14 @@
 {
     public class Review
     {
-        public int Id { get; set; }
-        public int CustomerId { get; set; }
+        public Guid Id { get; set; }
+        public Guid CustomerId { get; set; }
         public string Comment { get; set; }
         public double Rating { get; set; }
 
-        public Review(int id, int customerId, string comment, double rating)
+        public Review(Guid customerId, string comment, double rating)
         {
-            Id = id;
+            Id = Guid.NewGuid();
             CustomerId = customerId;
             Comment = comment;
             Rating = rating;

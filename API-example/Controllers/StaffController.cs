@@ -1,5 +1,7 @@
+using API_example;
 using API_example.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyApp.Namespace
 {
@@ -7,48 +9,67 @@ namespace MyApp.Namespace
     [ApiController]
     public class StaffController : ControllerBase
     {
-        private List<Staff> Employees { get; set; } = new([
-                new Staff(1, "Berit Berggren", "Chef"),
-                new Staff(2, "Bosse Börjesson", "Städare"),
-                new Staff(3, "Ruben Koivisto", "Vaktmästare")
-            ]);
-
-        // GET: api/<StaffController>
+        // GET: api/staff
         [HttpGet]
-        public IEnumerable<Staff> Get()
+        public async Task<IEnumerable<Staff>> Get()
         {
-            return Employees;
+            await using var db = new AppDbContext();
+            var employees = await db.Employees.ToListAsync();
+
+            return employees;
         }
 
-        // GET api/<StaffController>/5
+        // GET api/staff/{id}
         [HttpGet("{id}")]
-        public Staff? Get(int id)
+        public async Task<Staff?> Get(Guid id)
         {
-            return Employees.FirstOrDefault(x => x.Id == id);
+            await using var db = new AppDbContext();
+            var staff = await db.Employees.FirstOrDefaultAsync(x => x.Id == id);
+
+            return staff;
         }
 
-        // POST api/<StaffController>
+        // POST api/staff
         [HttpPost]
-        public void Post([FromBody] Staff value)
+        public async void Post([FromBody] Staff value)
         {
-            Employees.Add(value);
+            await using var db = new AppDbContext();
+
+            var newEmployee = new Staff(value.Name, value.Position);
+
+            db.Employees.Add(newEmployee);
+            db.SaveChanges();
         }
 
-        // PUT api/<StaffController>/5
+        // PUT api/staff/{id}
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] Staff value)
+        public async void Put(Guid id, [FromBody] Staff updated)
         {
-            var updateEmployee = Employees.FirstOrDefault(x => x.Id == id);
-            updateEmployee.Name = value.Name;
-            updateEmployee.Id = value.Id;
-            updateEmployee.Position = value.Position;
+            await using var db = new AppDbContext();
+            var employee = await db.Employees.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (employee is not null)
+            {
+                employee.Id = updated.Id;
+                employee.Name = updated.Name;
+                employee.Position = updated.Position;
+                db.SaveChanges();
+            }
         }
 
-        // DELETE api/<StaffController>/5
+        // DELETE api/staff/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async void Delete(Guid id)
         {
-            Employees.RemoveAll(x => x.Id == id);
+            await using var db = new AppDbContext();
+
+            var employee = await db.Employees.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (employee is not null)
+            {
+                db.Employees.Remove(employee);
+                db.SaveChanges();
+            }
         }
     }
 }
