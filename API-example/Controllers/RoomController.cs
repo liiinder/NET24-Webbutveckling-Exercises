@@ -1,5 +1,7 @@
+using API_example;
 using API_example.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyApp.Namespace
 {
@@ -7,35 +9,58 @@ namespace MyApp.Namespace
     [ApiController]
     public class RoomController : ControllerBase
     {
-        private List<Room> Rooms { get; set; } = new([
-
-            new Room(1, "Standard", 200, true),
-            new Room(2, "Deluxe", 250, false),
-            new Room(3, "Suite", 500, true)
-            ]);
-
         // GET: api/<rooms>
         [HttpGet]
-        public IEnumerable<Room> Get()
+        public async Task<IEnumerable<Room>> Get()
         {
-            return Rooms;
+            await using var db = new AppDbContext();
+            var rooms = await db.Rooms.ToListAsync();
+
+            return rooms;
         }
 
         // GET api/<rooms>/{id}
         [HttpGet("{id}")]
-        public Room? Get(int id)
+        public async Task<Room?> Get(Guid id)
         {
-            var result = Rooms.FirstOrDefault(x => x.Id == id);
-            return result;
+            await using var db = new AppDbContext();
+            var room = await db.Rooms.FirstOrDefaultAsync(x => x.Id == id);
+
+            return room;
         }
 
         // GET api/<rooms>/available
         [HttpGet("available")]
-        public IEnumerable<Room> GetAvailable()
+        public async Task<IEnumerable<Room>> GetAvailable()
         {
-            var result = Rooms.Where(x => x.IsAvailable).ToList();
+            await using var db = new AppDbContext();
+            var result = await db.Rooms.Where(x => x.IsAvailable).ToListAsync();
+
             return result;
         }
 
+        [HttpPost]
+        public async void Post([FromBody] Room value)
+        {
+            await using var db = new AppDbContext();
+            db.Rooms.Add(new Room(value.Type, value.PricePerNight, value.IsAvailable));
+            await db.SaveChangesAsync();
+        }
+
+        // PUT api/<UsersController>/5
+        [HttpPut("{id}")]
+        public void Put(Guid id, [FromBody] Room updated)
+        {
+            using var db = new AppDbContext();
+            var room = db.Rooms.FirstOrDefault(x => x.Id == id);
+            if (room is not null)
+            {
+                room.Id = updated.Id;
+                room.Type = updated.Type;
+                room.PricePerNight = updated.PricePerNight;
+                room.IsAvailable = updated.IsAvailable;
+                db.SaveChanges();
+            }
+        }
     }
 }
